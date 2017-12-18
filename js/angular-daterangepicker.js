@@ -119,8 +119,8 @@
               objValue = f(val);
             } else {
               x = val.split(opts.locale.separator).map(f);
-              objValue.startDate = x[0].startOf("day");
-              objValue.endDate = x[1].endOf("day");
+              objValue.startDate = x[0];
+              objValue.endDate = x[1];
             }
           }
           return objValue;
@@ -134,10 +134,24 @@
             autoUpdateInput: false
           }), function(start, end) {
             return $scope.$apply(function() {
-              return $scope.model = opts.singleDatePicker ? start : {
+              // return $scope.model = opts.singleDatePicker ? start : {
+              // changed by tushar on 15/12/2017 w.r.t. https://github.com/fragaria/angular-daterangepicker/pull/194
+              var formatters, idx, viewValue;
+              $scope.model = opts.singleDatePicker ? start : {
                 startDate: start,
                 endDate: end
               };
+              formatters = modelCtrl.$formatters;
+              idx = formatters.length;
+              viewValue = $scope.model;
+              while (idx--) {
+                viewValue = formatters[idx](viewValue);
+              }
+              modelCtrl.$viewValue = modelCtrl.$$lastCommittedViewValue = viewValue;
+              modelCtrl.$modelValue = $scope.model;
+              modelCtrl.$render();
+              return modelCtrl.$$writeModelToScope();
+
             });
           });
           _picker = el.data('daterangepicker');
